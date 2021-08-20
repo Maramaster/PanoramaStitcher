@@ -11,8 +11,9 @@ using System.Windows.Forms;
 namespace Stitcher360
 {
     public partial class Form1 : Form
-    {
-        public Form1()
+    { 
+        //TODO: fullscreen + redo design 2:1 nahore na upload a dolni cast vlevo fl, rows a cols, dolni cast vpravo advanced
+		public Form1()
         {
             InitializeComponent();
             InitializeMenu();
@@ -33,25 +34,32 @@ namespace Stitcher360
             int widthOfTextbox = 200;
             int heightOfTextbox = 40;
             //location X, location Y, name of a textbox, text inside textbox, width and height of textbox
-            CreateTextbox(this.Width / 2, this.Bottom / 2, "button1", "Textbox", widthOfTextbox, heightOfTextbox);
-		}
+            CreateTextbox(this.Width / 2, (this.Bottom / 4)*1, "textBox1", "Input Focal Lenght", widthOfTextbox, heightOfTextbox);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4)*2, "textBox2", "Input Number of Pictures in Row", widthOfTextbox, heightOfTextbox);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4)*3, "textBox3", "Input Number of Pictures in Collumn", widthOfTextbox, heightOfTextbox);
+
+            //TODO: rows a cols
+            //TODO: adaptivne dopocitat rows?
+        }
 
 		private void CreateTextbox(int X, int Y, string name, string text, int width, int height)
 		{
-            // Create and initialize a Button.
-            Button button = new Button();
+            // Create and initialize a TextBox.
+            TextBox textBox = new TextBox();
 
-
-            button.Location = new System.Drawing.Point(X, Y);
-            button.Name = name;
-            button.Size = new System.Drawing.Size(width, height);
-            button.TabIndex = 4;
-            button.Text = text;
-            button.UseVisualStyleBackColor = true;
+            textBox.Location = new System.Drawing.Point(X, Y);
+            textBox.Name = name;
+            textBox.Size = new System.Drawing.Size(width, height);
+            textBox.TabIndex = 4;
+            textBox.Text = text;
 
             // Add the button to the form.
-            Controls.Add(button);
+            Controls.Add(textBox);
+
+            textBox.Click += new System.EventHandler(this.ClearTextBox);
         }
+
+
 
 		public void CreateButton(int X, int Y, string name, string text, int width, int height)
 		{
@@ -67,7 +75,7 @@ namespace Stitcher360
 			button.UseVisualStyleBackColor = true;
 
 
-            // TODO: vyresime delegatama
+            // TODO: delegatove
             switch (text)
             {
                 case "Load images":
@@ -135,19 +143,43 @@ namespace Stitcher360
 
 		private void LoadImage_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog()
+            using (OpenFileDialog openFileDialog = new OpenFileDialog()
             {
                 Title = "Open Image",
                 Filter = "Image File|*.jpg;*.png"
             })
             {
-                if (ofd.ShowDialog(this) != DialogResult.OK) return;
+                if (openFileDialog.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                {
+                    //string selectedFile = openFileDialog.FileName;
 
-               /* m_original = Image.FromFile(ofd.FileName);
-                m_processed = (Image)m_original.Clone();
-                myProcessedLabel.Text = "Original";
-                myPictureBox.Image = m_original;*/
+                    //getting selected image
+                    
+                    Image image = Image.FromFile(openFileDialog.FileName);
+
+                    PictureBox picture = new PictureBox
+                    {
+                        Width = 55,
+                        Height = 55
+                    };
+
+                    picture.SizeMode = PictureBoxSizeMode.StretchImage;
+                    picture.Image = (Image)image;
+
+                    //TODO: kouknout do databaze a podle toho priradit cislo a lokaci
+                    picture.Name = "Test PictureBox";
+                    picture.Location = new Point(30, 30);
+
+                    Controls.Add(picture);
+                    picture.BringToFront();
+
+                }
             }
+        }
+        private void ClearTextBox(object sender, EventArgs e)
+        {
+            //only on TextBoxes, therefore no error could accour
+		    ((TextBox)sender).Text = "";
         }
 
         private void Form1_Click(object sender, EventArgs e)
