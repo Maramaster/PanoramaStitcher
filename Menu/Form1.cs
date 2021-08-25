@@ -13,12 +13,13 @@ namespace Stitcher360
 {
     public partial class Form1 : Form
     {
-        //TODO: fullscreen + redo design 2:1 nahore na upload a dolni cast vlevo fl, rows a cols, dolni cast vpravo advanced
+        //TODO: redo design 2:1 nahore na upload a dolni cast vlevo fl, rows a cols, dolni cast vpravo advanced
         SessionData sessionData = new SessionData();
         public Form1()
         {
             InitializeComponent();
             InitializeMenu();
+            WindowState = FormWindowState.Maximized;
         }
 
         public void InitializeMenu()
@@ -37,16 +38,19 @@ namespace Stitcher360
             int widthOfTextbox = 200;
             int heightOfTextbox = 40;
             //location X, location Y, name of a textbox, text inside textbox, width and height of textbox
-            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 1, "textBox1", "Input Focal Lenght", widthOfTextbox, heightOfTextbox);
-            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 2, "textBox2", "Input Number of Pictures in Row", widthOfTextbox, heightOfTextbox);
-            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 3, "textBox3", "Input Number of Pictures in Collumn", widthOfTextbox, heightOfTextbox);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 1, "textBox1", "", widthOfTextbox, heightOfTextbox,false);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 2, "textBox2", "", widthOfTextbox, heightOfTextbox,false);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 3, "textBox3", "", widthOfTextbox, heightOfTextbox,false);
 
-            //TODO: pridat permanentni textovy popisky nad textovy okna, protoze kdyz uz jednou zmizej tak se znova neobjevi
-            //TODO: rows a cols
+            //not rewritable textboxes for info only
+            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 1 - heightOfTextbox+15, "text1", "Input Focal Lenght", widthOfTextbox, heightOfTextbox,true);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 2 - heightOfTextbox+15, "text2", "Input Number of Pictures in Row", widthOfTextbox, heightOfTextbox,true);
+            CreateTextbox(this.Width / 2, (this.Bottom / 4) * 3 - heightOfTextbox+15, "text3", "Input Number of Pictures in Collumn", widthOfTextbox, heightOfTextbox,true);
+
             //TODO: adaptivne dopocitat rows?
         }
 
-        private void CreateTextbox(int X, int Y, string name, string text, int width, int height)
+        private void CreateTextbox(int X, int Y, string name, string text, int width, int height, bool ReadOnly)
         {
             // Create and initialize a TextBox.
             TextBox textBox = new TextBox();
@@ -56,11 +60,14 @@ namespace Stitcher360
             textBox.Size = new System.Drawing.Size(width, height);
             textBox.TabIndex = 4;
             textBox.Text = text;
+            textBox.ReadOnly = ReadOnly;
+			if (ReadOnly) { textBox.BorderStyle = System.Windows.Forms.BorderStyle.None; }
+            
 
             // Add the button to the form.
             Controls.Add(textBox);
 
-            textBox.Click += new System.EventHandler(this.ClearTextBox);
+            //textBox.Click += new System.EventHandler(this.ClearTextBox);
         }
 
         public void CreateButton(int X, int Y, string name, string text, int width, int height)
@@ -114,14 +121,22 @@ namespace Stitcher360
 
         private void StitchImages_Click(object sender, EventArgs e)
         {
-            //TODO: kontrola jestli tam jsou obrazky v session datech
-            Bitmap finalresult = new Bitmap(sessionData.OutResolutionX, sessionData.OutResolutionY);
-            finalresult = PhotoAssembler.StitchPhotos(sessionData);
-            SaveFileDialog dialog = new SaveFileDialog();
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                finalresult.Save(dialog.FileName, ImageFormat.Jpeg);
+            //checks if there are any photos to be stitched
+            if(sessionData.LoadedImages!= null && sessionData.LoadedImages.Length >= 2)
+			{
+                Bitmap finalresult = new Bitmap(sessionData.OutResolutionX, sessionData.OutResolutionY);
+                finalresult = PhotoAssembler.StitchPhotos(sessionData);
+                SaveFileDialog dialog = new SaveFileDialog();
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    finalresult.Save(dialog.FileName, ImageFormat.Jpeg);
+                }
             }
+			else
+			{
+                MessageBox.Show("Please enter at least two pictures to be stitched.");
+			}
+
         }
 
         private void RepaireLens_Click(object sender, EventArgs e)
@@ -199,13 +214,14 @@ namespace Stitcher360
                 }
             }
         }
+        /*
         private void ClearTextBox(object sender, EventArgs e)
         {
             //TODO: smazat a dat text nad box
             //only on TextBoxes, therefore no error could accour
             ((TextBox)sender).Text = "";
         }
-
+        */
         private void Form1_Click(object sender, EventArgs e)
         {
             //this.Close();
