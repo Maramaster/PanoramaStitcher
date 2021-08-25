@@ -11,6 +11,7 @@ namespace Stitcher360
     {
         public static Bitmap StitchPhotos(SessionData sessionData)
         {
+            
             if (sessionData.OutResolutionX != sessionData.OutResolutionY * 2)
             {
                 // An equirectangular projection requires 2x1 image format
@@ -18,11 +19,21 @@ namespace Stitcher360
             }
             Bitmap output = new Bitmap(sessionData.OutResolutionX, sessionData.OutResolutionY);
             SphereCoords[] photoCenters = GetPhotocenters(sessionData);
+            Color last= Color.Black;
             for (int x = 0; x < sessionData.OutResolutionX; x++)
             {
                 for (int y = 0; y < sessionData.OutResolutionY; y++)
                 {
-                    output.SetPixel(x, y, GetPixelFromSphere(sessionData, photoCenters));
+                    Color col = GetPixelFromSphere(x, y, sessionData, photoCenters);
+                    
+                    output.SetPixel(x, y, col);
+
+                    //only for debugging 
+                    if(last != GetPixelFromSphere(x, y, sessionData, photoCenters))
+                    {
+                        int x53 = 10;
+                    }
+                    last = GetPixelFromSphere(x, y, sessionData, photoCenters);
                 }
             }
             return output;
@@ -37,34 +48,37 @@ namespace Stitcher360
             SphereCoords[] output = new SphereCoords[20];
             for (int i = 0; i < 10; i++)
             {
-                output[i] = new SphereCoords(36*i, 130);
-                output[i+10] = new SphereCoords(36 * i, 50);
+                // Puvodne 130 a 50, coz je spatne
+                output[i] = new SphereCoords(36*i, 40);
+                output[i+10] = new SphereCoords(36 * i, -40);
             }
             return output;
         }
 
-        private static Color GetPixelFromSphere(SessionData sessionData, SphereCoords[] photoCenters)
+        private static Color GetPixelFromSphere(int x, int y, SessionData sessionData, SphereCoords[] photoCenters)
         {
-            //double lat = GetLatitude(x, sessionData.OutResolutionX);
-            //double lon = GetLongitude(y, sessionData.OutResolutionY);
+            SphereCoords currentRay = new SphereCoords(x, y, sessionData.OutResolutionX, sessionData.OutResolutionY);
 
-            return new Color();
+            int selectedImageSegment = GetClosestImgCoord(photoCenters, currentRay);
+
+            Color[] rainbowColors = {Color.Red, Color.Green, Color.Yellow, Color.AliceBlue, Color.Teal, Color.Aqua, Color.DarkCyan, Color.SaddleBrown, Color.Pink, Color.MediumVioletRed,
+                Color.Salmon, Color.SeaShell, Color.Tomato, Color.DodgerBlue, Color.LimeGreen, Color.Indigo, Color.PeachPuff, Color.Coral, Color.Gold, Color.Cyan};
+            return rainbowColors[selectedImageSegment];
         }
 
-        // The following mathematical formulas were borrowed from Wikipedia: https://en.wikipedia.org/wiki/Equirectangular_projection
-        // For clarity:             
-        // Latitude is  - horizontal
-        // Longitude is | vertical
-        private static double GetLongitude(int y, int finalResolutionY)
+        private static int GetClosestImgCoord(SphereCoords[] photoCenters, SphereCoords currentRay)
         {
-            // arcsin(y / radius)
-            return Math.Asin(y / finalResolutionY);
-        }
-
-        private static double GetLatitude(int x, int finalResolutionX)
-        {
-            double whereOnCircle = finalResolutionX / x;
-            return whereOnCircle * 360;
+            int minI = 0;
+            double minDistance = double.MaxValue;
+            for (int i = 0; i < photoCenters.Length; i++)
+            {
+                if (photoCenters[i].DistanceFrom(currentRay) < minDistance)
+                {
+                    minI = i;
+                    minDistance = photoCenters[i].DistanceFrom(currentRay);
+                }
+            }
+            return minI;
         }
     }
 }
