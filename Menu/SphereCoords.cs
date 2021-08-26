@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Stitcher360
 {
-    class SphereCoords
+    public class SphereCoords
     {
         public SphereCoords(double lat, double lon)
         {
@@ -26,8 +26,9 @@ namespace Stitcher360
         /// <param name="finalResolutionY">Y size of equirectangular canvas</param>
         public SphereCoords(int x, int y, int finalResolutionX, int finalResolutionY)
         {
-            //TODO: Tangens? a napul -50,0,50 misto 0,50,100
-            this.lon = ToDegree(Math.Asin((double)y / (double)finalResolutionY));
+            // Normalize the y coordinate so 0 is in the middle
+            y -= finalResolutionY / 2;
+            this.lon = ToDegree(Math.Atan((double)y / (double)finalResolutionY));
             this.lat = 360 * ((double)x / (double)finalResolutionX);
         }
 
@@ -45,11 +46,11 @@ namespace Stitcher360
             return Math.Sqrt(Math.Pow((double)(this.lat - other.lat), 2) + Math.Pow((double)(this.lon - other.lon), 2));
         }
 
-        private double ToDegree(double angle)
+        public static double ToDegree(double angle)
         {
             return (180 / Math.PI) * angle;
         }
-        private double ToRadians(double angle)
+        public static double ToRadians(double angle)
         {
             return (Math.PI / 180) * angle;
         }
