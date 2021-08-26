@@ -14,7 +14,7 @@ namespace Stitcher360
 {
 	public partial class Form1 : Form
 	{
-		//TODO: redo design 2:1 nahore na upload a dolni cast vlevo fl, rows a cols, dolni cast vpravo advanced
+
 		SessionData sessionData = new SessionData();
 		public Form1()
 		{
@@ -22,6 +22,7 @@ namespace Stitcher360
 			sessionData.OutResolutionX = 1000;
 			sessionData.OutResolutionY = 500;
 
+			//TODO: fullscreen on resize
 			InitializeComponent();
 			InitializeMenu();
 			//fullscreen
@@ -35,10 +36,10 @@ namespace Stitcher360
 
 			//location X, location Y, name of a button, text inside button, width and height of button
 			CreateButton(widthOfButton - 40, heightOfButton - 40, "button1", "Load images", widthOfButton, heightOfButton);
-			CreateButton(this.Width - widthOfButton, this.Top, "button2", "Advanced", widthOfButton, heightOfButton);
-			CreateButton(this.Width - widthOfButton, (this.Bottom / 3) * 2, "button3", "Remove Vignette", widthOfButton, heightOfButton);
-			CreateButton(this.Width - widthOfButton, this.Bottom / 3, "button4", "Repair Lens Distortion", widthOfButton, heightOfButton);
-			CreateButton(widthOfButton, 2 * this.Bottom / 3, "button5", "Stitch Images", widthOfButton, heightOfButton);
+			CreateButton(this.Width - widthOfButton - 10, ((this.Bottom / 3) * 1) / 2 + (this.Bottom / 2) - 100 - heightOfButton + 15, "button2", "Advanced", widthOfButton, heightOfButton);
+			CreateButton(this.Width / 2, ((this.Bottom / 3) * 1) / 2 + (this.Bottom / 2) - 100 - heightOfButton + 15, "button3", "Remove Vignette", widthOfButton, heightOfButton);
+			CreateButton(this.Width / 2, this.Bottom - (heightOfButton * 3 / 2) - 10, "button4", "Repair Lens Distortion", widthOfButton, heightOfButton);
+			CreateButton(this.Width - widthOfButton - 10, this.Bottom - (heightOfButton * 3 / 2) - 10, "button5", "Stitch Images", widthOfButton, heightOfButton);
 
 
 			int widthOfTextbox = 200;
@@ -54,7 +55,6 @@ namespace Stitcher360
 			CreateTextbox(15, ((this.Bottom / 3) * 3) / 2 + (this.Bottom / 2) - 100 - heightOfTextbox + 15, "text3", "Input Number of Pictures in Collumn", widthOfTextbox, heightOfTextbox, true);
 
 			//CreateSeparatingLine();
-			//TODO: adaptivne dopocitat rows?
 		}
 
 		private void CreateSeparatingLine()
@@ -87,7 +87,40 @@ namespace Stitcher360
 			// Add the button to the form.
 			Controls.Add(textBox);
 
-			//textBox.Click += new System.EventHandler(this.ClearTextBox);
+			textBox.Leave += new System.EventHandler(this.WriteToSessionData);
+		}
+
+		private void WriteToSessionData(object sender, EventArgs e)
+		{
+			//firstly check if input data is valid
+			if (Validator.isNumber(((TextBox)sender).Text))
+			{
+				//once youve finished adding data to Textbox, add information to SessionData
+				switch (((TextBox)sender).Name)
+				{
+					//update focal lenght
+					case "textBox1":
+						sessionData.FocalLenght = Int32.Parse(((TextBox)sender).Text);
+						break;
+					//update rows
+					case "textBox2":
+						sessionData.NumberOfPicturesInRow = Int32.Parse(((TextBox)sender).Text);
+						break;
+					//update collumns
+					case "textBox3":
+						sessionData.NumberOfPicturesInCol = Int32.Parse(((TextBox)sender).Text);
+						break;
+
+					default:
+						break;
+
+				}
+			}
+			else
+			{
+				MessageBox.Show("Please enter an integer.");
+			}
+
 		}
 
 		public void CreateButton(int X, int Y, string name, string text, int width, int height)
@@ -103,8 +136,6 @@ namespace Stitcher360
 			button.Text = text;
 			button.UseVisualStyleBackColor = true;
 
-
-			// TODO: delegatove
 			switch (text)
 			{
 				case "Load images":
@@ -149,7 +180,7 @@ namespace Stitcher360
 				SaveFileDialog dialog = new SaveFileDialog();
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
-					finalresult.Save(dialog.FileName, ImageFormat.Jpeg);
+					finalresult.Save(dialog.FileName, ImageFormat.Png);
 				}
 			}
 			else
@@ -206,45 +237,62 @@ namespace Stitcher360
 				openFileDialog.Multiselect = true;
 				if (openFileDialog.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
 				{
-					//string selectedFile = openFileDialog.FileName;
-
 					//getting selected image
-					sessionData.LoadedImages = new Image[openFileDialog.FileNames.Length];
-					Image image = Image.FromFile(openFileDialog.FileName);
-					for (int i = 0; i < openFileDialog.FileNames.Length; i++)
+					sessionData.LoadedImages = new Bitmap[openFileDialog.FileNames.Length];
+
+					Image[] images = getImages(openFileDialog.FileNames);
+					
+					//variables for in which row and collumn will the picture end up
+					int row = 0;
+					int col = 0;
+					for (int i = 0; i < sessionData.LoadedImages.Length; i++)
 					{
-						sessionData.LoadedImages[i] = Image.FromFile(openFileDialog.FileNames[i]);
+						sessionData.LoadedImages[i] = new Bitmap(Image.FromFile(openFileDialog.FileNames[i]));
+
+						int widthOfButton = 100;
+						int heightOfButton = 70;
+						int separatingGap = 7;
+						int offsetFromTop = 50;
+
+						int widthOfPicture = (this.Width - widthOfButton) / (sessionData.NumberOfPicturesInRow + 1) - separatingGap;
+						int heightOfPicture = ((this.Bottom / 2) - heightOfButton) / (sessionData.NumberOfPicturesInCol + 1) - separatingGap;
+						PictureBox picture = new PictureBox
+						{
+							Width = widthOfPicture,
+							Height = heightOfPicture
+						};
+
+						picture.SizeMode = PictureBoxSizeMode.StretchImage;
+						picture.Image = (Image)images[i];
+
+						picture.Name = "Test PictureBox" + i.ToString();
+
+						if(this.Width-50 < widthOfButton + ((widthOfPicture * (col + 1)) + (col * separatingGap)))
+						{
+							row++;
+							col = 0;
+						}
+						picture.Location = new Point(widthOfButton + ((widthOfPicture * (col + 1)) + (col * separatingGap)), (offsetFromTop + heightOfPicture * (row)) + (row * separatingGap));
+
+						Controls.Add(picture);
+						picture.BringToFront();
+
+						col++;
 					}
-
-					// TODO: for image in sessionData.LoadedImages do: image.display()
-
-					PictureBox picture = new PictureBox
-					{
-						Width = 55,
-						Height = 55
-					};
-
-					picture.SizeMode = PictureBoxSizeMode.StretchImage;
-					picture.Image = (Image)image;
-
-					//TODO: kouknout do databaze a podle toho priradit cislo a lokaci
-					picture.Name = "Test PictureBox";
-					picture.Location = new Point(30, 30);
-
-					Controls.Add(picture);
-					picture.BringToFront();
-
 				}
 			}
 		}
-		/*
-        private void ClearTextBox(object sender, EventArgs e)
-        {
-            //TODO: smazat a dat text nad box
-            //only on TextBoxes, therefore no error could accour
-            ((TextBox)sender).Text = "";
-        }
-        */
+
+		private Image[] getImages(string[] fileNames)
+		{
+			Image[] images = new Image[fileNames.Length];
+			for (int i = 0; i < fileNames.Length; i++)
+			{
+				images[i] = Image.FromFile(fileNames[i]);
+			}
+			return images;
+		}
+
 		private void Form1_Click(object sender, EventArgs e)
 		{
 			//this.Close();
