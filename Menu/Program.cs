@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UnitTests")]
+
 namespace Stitcher360
 {
     static class Program
