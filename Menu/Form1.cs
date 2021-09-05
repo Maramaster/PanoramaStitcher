@@ -21,6 +21,7 @@ namespace Stitcher360
 			//testovaci data
 			sessionData.OutResolutionX = 1000;
 			sessionData.OutResolutionY = 500;
+			sessionData.Radius = sessionData.OutResolutionX / (2 * Math.PI);
 
 			//TODO: fullscreen on resize
 			InitializeComponent();
@@ -29,7 +30,7 @@ namespace Stitcher360
 			WindowState = FormWindowState.Maximized;
 		}
 
-		public void InitializeMenu()
+        public void InitializeMenu()
 		{
 			int widthOfButton = 100;
 			int heightOfButton = 70;
