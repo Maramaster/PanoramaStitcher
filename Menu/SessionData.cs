@@ -7,6 +7,9 @@ using System.Drawing;
 
 namespace Stitcher360
 {
+    /// <summary>
+    /// Global holder of all the configuration data which is used throughout the whole solution
+    /// </summary>
     public class SessionData
     {
         public Bitmap[] LoadedImages { get; set; }
@@ -17,5 +20,6 @@ namespace Stitcher360
         public int NumberOfPicturesInRow { get; set; }
         public int NumberOfPicturesInCol { get; set; }
         public int FocalLenght { get; set; }
+        public double Radius { get; set; }
     }
 }
