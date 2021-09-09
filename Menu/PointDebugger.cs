@@ -11,7 +11,7 @@ namespace Stitcher360
 	{
 		public static void WritePointArrayToTxt(SphereVec[] sphereVecs, string debugName)
         {
-			// The output is formatted to allow easy reading from a python script which I use
+			// The output is formatted to allow easy reading from a python script which was used
 			// to visualize the given point cloud in Blender
 			//[(0.0, 0.0, 0.0), (1.0, 0, 0)]
 			using (StreamWriter SW = new StreamWriter(debugName))
