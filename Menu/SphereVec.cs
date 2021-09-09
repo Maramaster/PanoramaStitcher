@@ -26,21 +26,20 @@ namespace Stitcher360
 		/// <param name="j"></param>
 		/// <param name="finalResolutionI"></param>
 		/// <param name="finalResolutionJ"></param>
-		public void getPointFromCylinder(int i, int j, int finalResolutionI, int finalResolutionJ)
+		public void GetPointFromCylinder(int i, int j, int finalResolutionI, int finalResolutionJ)
 		{
-			// Normalize the y coordinate so 0 is in the middle
+			// normalize the y coordinate so 0 is in the middle
 			j -= finalResolutionJ / 2;
-			// Now calculate the sphere radius using the circumference following from the geometry of eqirectangular projection
+			// now calculate the sphere radius using the circumference following from the geometry of eqirectangular projection
 			double sphereRadius = finalResolutionI / (2 * Math.PI);
-			// Scale the y coordinate so that it enters the Asin function correctly
+			// scale the y coordinate so that it enters the Asin function correctly
 			double jScaled = ((double)j / ((double)finalResolutionJ / 2)) * sphereRadius;
-			// Flip the y coordinate because the input coordinate system has the y axis flipped as is usual in all computer graphics
-			double jFlipped = jScaled * -1;
-			double lon = ToDegree(Math.Asin((double)jFlipped / sphereRadius));
+			// set latitude and longtitude 
+			double lon = ToDegree(Math.Asin((double)jScaled / sphereRadius));
 			double lat = 360 * ((double)i / (double)finalResolutionI);
 
 			//convert to vector from lat and lon
-			int[] coords = getVectorFromLatandLon(lat, lon, sphereRadius);
+			int[] coords = GetVectorFromLatandLon(lat, lon, sphereRadius);
 
 			this.X = coords[0];
 			this.Y = coords[1];
@@ -48,19 +47,15 @@ namespace Stitcher360
 		}
 
 		// converter from angles to vector
-		private int[] getVectorFromLatandLon(double lat, double lon, double sphereRadius)
+		private int[] GetVectorFromLatandLon(double lat, double lon, double sphereRadius)
 		{
-			int[] coords = new int[3];
+			double[,] rotationMatrix = Matrix.YZRotationMatrix(ToRadians(lat), ToRadians(lon));
+			double[] coordsDouble = Matrix.Multiply3n1(rotationMatrix, sphereRadius, 0, 0);
 
-			// X Y Z
-			coords[0] = (int)(sphereRadius * Math.Cos(ToRadians(lat)) * Math.Cos(ToRadians(lon)));
-			coords[1] = (int)(sphereRadius * Math.Cos(ToRadians(lat)) * Math.Sin(ToRadians(lon)));
-			coords[2] = (int)(sphereRadius * Math.Sin(ToRadians(lat)));
-
-			return coords;
+			return coordsDouble.Select(x => (int)x).ToArray();
 		}
 
-		//euklid. metric distance
+		//euklidean metric distance
 		public double DistanceFrom(SphereVec other)
 		{
 			return Math.Sqrt(
