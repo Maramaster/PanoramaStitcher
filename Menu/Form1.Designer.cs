@@ -35,10 +35,9 @@ namespace Stitcher360
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1373, 670);
             this.Name = "Form1";
             this.Text = "Form1";
-            this.Click += new System.EventHandler(this.Form1_Click);
             this.ResumeLayout(false);
 
         }
