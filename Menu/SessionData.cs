@@ -21,5 +21,7 @@ namespace Stitcher360
         public int NumberOfPicturesInCol { get; set; }
         public int FocalLenght { get; set; }
         public double Radius { get; set; }
+        public int YAngle { get; set; }
+        public double NewBasisScale { get; set; }
     }
 }
